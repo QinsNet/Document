@@ -1,188 +1,248 @@
----
-layout: page
-title: Advanced
-description: >
-  This chapter covers advanced topics, such as offline support and custom JS builds. Codings skills are recommended.
-hide_description: true
-sitemap: false
----
+# 引论
 
-This chapter covers advanced topics, such as offline support and custom JS builds. Codings skills are recommended.
+## 介绍
 
-0. this unordered seed list will be replaced by toc as unordered list
-{:toc}
+### Ethereal
 
-## Enabling offline support
-Hydejack v8 introduces experimental "cache as you go" offline support. This is implemented via the [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API), a new browser standard that is now supported in the latest versions of all major browsers. However, it is a very powerful feature and should be used with a lot of care.
+> **致力于解决混合编程、管理中心、注册中心、快速部署的SOA（面向服务架构）微服务框架。**
 
-Enabling this feature requires that your content meets the following criteria:
+![image-20210919132528075](C:\Users\mzh\OneDrive\Ethereal\图片资料\Core架构.png)
 
-* Content doesn't change between deploys (e.g. manually adding things to `_site` etc.)
-* All assets in `assets` are immutable, i.e. they never change (when changing a file in assets, it needs to have a new name and links need to point to the new file).
-* The site is mostly self-contained, i.e. assets are served from the same domain (offline support will not download assets form external sites by default)
-* The site is served via HTTPS (this is a Service Worker requirement)
+### 微服务需求
 
-To enable this feature, create a `sw.js` file in the root of your project and add the following content:
+> “ 庞大臃肿的业务，就像塞满逻辑的Main函数。”
 
-```js
----
----
-importScripts("{% raw %}{{ '/assets/js/sw.js' | relative_url }}?t={{ site.time | date_to_xmlschema }}{% endraw %}");
+假设我们要搭建一款大型游戏，我们是不是先需要简略的分析一下系统类别：用户系统、消息系统、战斗系统、副本系统、活动系统....
+
+从我们的思考行为来佐证，我们也是本能的进行了业务功能需求的分离，如果把这些系统放到不同的服务器，这就叫**分布式**。
+
+那什么是微服务呢？分布式完成了一个系统拥有的一组功能，比如用户系统拥有：登录、注册、查询，业务逻辑那么多，其实也很麻烦，所以我们再进一步的细分，**一个微服务就是一个业务**，登录、注册、查询，就是三个微服务。
+
+我们从面向用户系统，转为了面向登录、注册、查询业务，颗粒度更低，目的性更强，实现起来更加轻松！
+
+>  “提倡将单一应用程序划分成一组小的服务，服务之间互相协调、互相配合，为用户提供最终价值。”      																																			——百度百科[微服务]
+
+作者表示一下自己的一得之见：
+
+>   *分布式：将一辆汽车分解为发动机、底盘、车身、电器；*
+>
+>   *微服务：将发动机、底盘、车身、电器拆分为各种零器件；*
+>
+>   *集群：将发动机、底盘、车身、电器乃至零器件进行批量复制。*
+
+**发动机、底盘、车身、电器还是属于车的部件，但各种零器件已经和车没有了关联。**
+
+大家都知道微服务的概念了，那有关微服务的一些技术问题也就接踵而来....
+
+------
+
+
+
+### 服务与请求[RPC]
+
+每一个微服务是一个零件，程序员通过组装零件，合成服务乃至系统，但零件和零件也会相互组合，一个微服务中，也会调用其他微服务，这样一个凌乱的环境，简化微服务调用逻辑的需求迫在眉睫！
+
+RPC(Remote Procedure Call)即远程方法调用，成功的解决了这个技术难点。
+
+![RPC](C:\Users\mzh\OneDrive\Ethereal\图片资料\RPC.jpg)
+
+图可能看起来有点复杂，其实我们可以字面意思理解，远程方法调用其实就是**调用远程服务器中的方法如同像调用本地方法一样**。
+
+比如得到GetName这个方法，如果请求网络服务器执行这个方法，我们需要实现具体的这个方法的数据传输、数据接收，然后得到结果，并考虑这个结果以何种方式反馈。
+
+如果直接通过Socket通讯，我们可以简单地通过文本操作进行数据分析。
+
+>   请求文本："GetName||参数一||参数二||参数三..."
+>
+>   返回文本："GetName||结果"
+
+假设有100个方法，你要写100条这样的判断语句嘛？【作者当时真的是这么做的，打开那页的代码时，已经有些卡顿了.....】
+
+好的，幸得贵人指点，作者去研究了RPC框架。
+
+原理就不说了，一些动态代理和反射的知识，动态代理和反射高级语言里面都有实现，我这里重点讲一下使用方法。
+
+```c#
+//IServer接口[部署在客户端]
+public interface IServer{
+    public string GetName(long id);
+}
+
+
+//IServer实现类[部署在服务器]
+public class Server:IServer{
+    public string GetName(long id){
+    	return NameDictionary.Get(id);//从键值表中取出名字并返回
+	}
+}
+
+//使用[客户端]
+public void main(){
+    IServer server = RPC.Register(IServer);//向RPC注册接口
+    Console.WriteLine("Name:" + server.GetName(id));
+}
 ```
 
-This will load the main service worker script from Hydejack's assets. The `site.time` part is necessary to make the service worker "byte different" every time you create a new build of your site, which triggers an update.
+**定义、实现、使用！**
 
-In your `config.yml` under the `hydejack` key, add the following:
+开发者不需要关心数据发送和反馈的各种细节，你只需在客户端定义一个接口，在服务端进行接口的对应实现，便可以在客户端进行直接调用，当采用同步方法调用时，更是保证了代码逻辑上的**顺序执行**。
 
-```yml
-offline:
-  enabled: true
-  cache_version: 1
+这种针对函数级别的调用，极大的简化了网络请求的复杂度，为后续微服务架构奠定了强有力的技术基础。
+
+------
+
+
+
+### 服务注册与发现[注册中心]
+
+我们既然讨论了微服务调用问题，接下来我们再进一步考虑一件事情，微服务就像各种零器件，如果只有七八个零器件，倒也简单，但一辆汽车，包含的零器件数以万计，这些零器件散落在地，凌乱混杂，怎么才能找到自己想要的那个零器件呢？
+
+这时候就需要一个贴心的表单了，将每一个零器件进行注册，标记坐标，当需要时我们通过表单快速查找对应零器件信息，从而确定坐标，Get。
+
+![img](https://upload-images.jianshu.io/upload_images/22310097-35c569edaad10183.png?imageMogr2/auto-orient/strip|imageView2/2/w/858/format/webp)
+
+通过注册中心，能够将所有微服务进行注册，并通过一定的负载均衡算法，返回一个最优的目标地址。
+
+
+
+> CAP理论
+>
+> 一致性(Consistency) : 所有节点在同一时间具有相同的数据
+>
+> 可用性(Availability) : 保证每个请求不管成功或者失败都有响应
+>
+> 分区容错(Partition tolerance) : 系统中任意信息的丢失或失败不会影响系统的继续运作
+
+我们常听的*Eurake*是AP原则，去中心化；Consul 、Zookeeper是CP原则，唯一Leader。
+
+Ethereal采用AP原则，去中心化处理，但Ethereal仍有意争取最大可能性的A原则，对于Ethereal的开发战略中，我们也将区块链作为了研究方向之一。
+
+区块链的特性，可以完美的解决去中心化信息不一致的问题，但作者学业沉重，也仅仅是表态后续会尝试这一方向的进行实现（权限本就安全，极大的简化了区块链的实现难度，根据作者的分析，似乎只需要实现数据一致问题就可以了，希望这个点可以对感兴趣的人有帮助）。
+
+### 服务管理[管理中心]
+
+微服务其实是SOA的一种变体，所以我们可以绕回来讲讲管理中心。
+
+从单机而言，管理中心负责管理本机所有微服务，无关其他网络节点的微服务，单纯的开启、关闭控制自己本机的微服务，属于微服务框架中的管理模块；
+
+但如果管理中心的定义放大到网络上，是对所有微服务的管理，对特定微服务进行远程控制。
+
+Ethereal采取网络管理中心的方案，在Ethereal架构中，每一个Net都是一个网络节点，网络节点下有Service服务，每一个Service服务都包含了多个微服务（函数）。
+
+Ethereal正积极开发网络管理中心前端，未来用户可以通过可视化的管理中心，对所有网络节点进行实时监控（Ethereal采用 WebSocket协议），用户可以轻松的管理每一个网络节点，并持久化在网站的实时配置。
+
+![前端页面](C:\Users\mzh\OneDrive\Ethereal\图片资料\前端页面.jpg)
+
+### 特性服务[混合编程]
+
+作者遇到了太多需要通过混合编程来解决问题的需求了。
+
+例如，一个硬件开发商想要硬件产品化，采用C++客户端采集硬件数据，而核心算法的处理却又必须放在Python（算法）所架构的服务端。
+
+每一款语言的流行，必有其所耀眼的特点，C/C++提供了对硬件的强大编程能力，Python提供了对数据的强大处理能力，鱼和熊掌可否兼得也？
+
+以C++作为客户端，向Python服务端发起请求的混合编程需求，作者认为比较好的途径就是通过网络通讯协议解决，这也与RPC相吻合。
+
+Ethereal也对混合编程进行了支持，而且是强有力的支持，Ethereal采用了注解式声明，不需要第三方代码生成工具、不需要学习额外的语法。
+
+同时Ethereal也支持**任意数据类型**的传输，Ethereal采用中间抽象类型的思想，支持参数级的处理，任意参数的序列化方式与逆序列化方式，都可以进行自定义，我们可以默认采用*Json*序列化，您也可以使用ProtoBuf、Xml亦或者个人设计的序列化语法。
+
+### 责任说明
+
+1. Ethereal并非所有语言都会实现一套C\S，我们理性的认为，用C++搭建服务器是一个糟糕的决定，所以我们长期不会对C++的服务器版本进行支持，且短期并无意于C++客户端版本。我们深知C++客户端的迫切，所以我们采用WebSocket协议，同时也支持了HTTP协议，这两种协议无论在何种流行语言，都有完整的框架支持，所以依旧可以与Ethereal进行交互，确保了无Ethereal版本支持下的最低交互保证！
+2. Ethereal热衷于支持流行语言，无论是C#、Java还是Python都有了可靠的支持，但也并非局限于这几种语言，我们仍在招募着志同道合的道友，同我们一起维护与拓展。
+3. Ethereal采用LGPL开源协议，我们希望Ethereal在社区帮助下持续健康的成长，更好的为社区做贡献。
+4. Ethereal长期支持，我们欢迎开发者对Ethereal进行尝鲜。
+
+## 入门
+
+接下来我们以C#和Java版本来快速了解三步曲：类型、网关、服务\请求。
+
+### Server[C#]
+
+```C#
+public class ServerService
+{
+    [Service]
+    public int Add(int a,int b)
+    {
+        return a + b;
+    }
+}
+
+//注册数据类型
+AbstractTypes types = new AbstractTypes();
+types.Add<int>("Int");
+types.Add<long>("Long");
+types.Add<string>("String");
+types.Add<bool>("Bool");
+types.Add<User>("User");
+Net net = NetCore.Register("name", Net.NetType.WebSocket); //注册网关
+Server server = ServerCore.Register(net,"127.0.0.1:28015/NetDemo/");//注册服务端
+Service service = ServiceCore.Register<ServerService>(net, "Server", types);//注册服务
+net.Publish();//启动
 ```
 
-The current implementation does not cache resources from external domains. There is now way of knowing if external sites conform to the conditions mentioned above, hence caching can be problematic and result in unexpected behavior.
+### Client[Java]
 
-For example, Google Analytics uses GET requests to send page views, each of which would be cached by the service worker without this policy. Frequently updating images, such as badges would never change.
-
-![Gem Version](https://badge.fury.io/rb/jekyll-theme-hydejack.svg)
-
-However, if you include resources that are hosted on another domain and don't change, you can add the `sw-cache` query parameter to the URL, e.g.
-
-    https://upload.wikimedia.org/wikipedia/commons/b/b1/57_Chevy_210.jpg?sw-cache
-
-This will cause them to be cached like resources from the assets folder.
-
-If you want to serve a file from the `assets` folder but NOT cache it for offline use, add the `no-cache` query parameter instead:
-
-    /assets/lfs/download.bin?no-cache
-
-
-![57 Chevy](https://upload.wikimedia.org/wikipedia/commons/b/b1/57_Chevy_210.jpg?sw-cache)
-
-
-### How offline storage works
-
-Hydejack's custom service worker implementation stores files for offline use on three different levels:
-
-Shell
-: The shell files are the core Hydejack files (CSS, JS) that only change between version updates.
-  If you made changes to any of these after enabling offline support, you must force an update by bumping the `cache_version` number in the config file.
-
-Assets
-: *These are presumed to be immutable.* In other words, every file is cached indefinitely. E.g.: If you want to update an image after enabling offline support, add the image under a different name and change the link in the content. Alternatively, you can bump the `cache_version`, but this will remove all other cached files from the asset cache.
-
-Content
-: The content cache exploits the fact that your content can't change between builds, so that it can be stored for offline use until you upload a new build. For now, the entire content cache is discarded every time you publish new content (future versions could cache them based on last modified dates).
-
-Other things to note are that the implementation will always cache the pages listed under `legal`, as well as the `404.html` page, which will be shown when the user is offline.
-
-
-## Adding a custom social media icon
-Hydejack includes a number of social media icons by default (in fact, everything that is provided by [IcoMoon](https://icomoon.io/)), but since the landscape is always changing, it is likely that a platform that is important to you will be missing at some point.
-
-You can add any platform by simply providing a complete URL. However, a fallback icon <span class="icon-link"></span> will be used.
-{:.note}
-
-### Creating the icon font
-In order to add a custom social media icon you have to use the [IcoMoon App](https://icomoon.io/app/) (free) to create a custom icon webfont. However, it is important that the generated font include all icons already in use by Hydejack. For this purpose, find the `selection.json` in [`assets/icomoon/selection.json`](https://github.com/hydecorp/hydejack/blob/v6/assets/icomoon/selection.json) and upload it to the app via "Import Icons".
-Then, use the app to add your icon(s).
-Consult the [IcoMoon docs](https://icomoon.io/#docs) for additional help.
-
-Once you've created and downloaded the icon font form IconMoon, replace the `icomoon` folder in `assets` in its entirety. Keep in mind that future updates of Hydejack will override this folder.
-
-### Adding the platform's metadata
-For the second step it is necessary to add the network's metadata to `_data/social.yml`.
-An entry looks like:
-
-~~~yml
-deviantart:
-  name: DeviantArt
-  icon: icon-deviantart
-  prepend: "https://"
-  append: ".deviantart.com"
-~~~
-
-`name`
-: The name of the network. Used for the title attribute and screen readers.
-
-`icon`
-: The icon CSS class. Can be chosen during the IcoMoon creation process.
-
-`prepend`
-: Optional. A string that is prepended to the username to form the link to the profile. If the final URL should be `https://<username>.deviantart.com`, this would be `https://`
-
-`append`
-: Optional. A string that is appended to the username to form the link to the profile. If the final URL should be `https://<username>.deviantart.com`, this would be `.deviantart.com`.
-
-
-## How CSS is organized in Hydejack
-Hydejack takes a quite unique approach to CSS, which is motivated by the ability to
-inline essential CSS rules in a `style` tag in the `<head/>` of a page (to increase the loading speed),
-while serving the rest in a separate file.
-
-The styles are written in SCSS and are located in the `_sass` folder, which looks like
-
-~~~
-├── hydejack
-│   ├── __inline__
-│   ├── __link__
-│   ├── _base.pre.scss
-│   ├── ...
-│   └── _social.pre.scss
-├── pooleparty
-│   ├── __inline__
-│   ├── __link__
-│   ├── _base.pre.scss
-│   ├── ...
-│   └── _type.pre.scss
-├── mixins.scss
-├── my-inline.scss
-├── my-style.scss
-├── syntax.scss
-└── variables.scss
-~~~
-
-The style rules are organized alongside components (or rather, topics) like "sidebar" and "footer".
-Further, there are two separate frameworks, "pooleparty" and "hydejack",
-which grew out of the original [Poole](http://getpoole.com/) and [Hyde](http://hyde.getpoole.com/) projects.
-Poole/party contains more general style rules, while Hyde/jack contains those that more are specific to the theme.
-However, this separation has blurred over time.
-
-Inside those folders, you will notice the `__inline__` and `__link__` folders.
-The unfriendly names are intentional, because their contents are generated by a script and shouldn't be modified directly.
-The source files are located in the same folder and end with `.pre.scss`.
-They are fully valid SCSS files, but contain comments that mark which lines should be inlined and which should be fetched asynchronously.
-
-The rules are as follows:
-* Every line between `// <<< inline ` and `// >>>` will be inlined
-* Every line between `// <<< link ` and `// >>>` will be linked
-* Every line that isn't contained in a block and ends with `// inline` will be inlined
-* Every line that isn't contained in a block and ends with `// link` will be linked
-* Every line for which none of the above applies will be included in both.
-
-The actual splitting happen with the `.scripts/build-css.sh` script (requires node.js 8+).
-You can run the script once by using
-
-~~~bash
-$ npm run build:css
-~~~
-
-or rebuild the CSS on every file change
-
-~~~bash
-$ npm run watch:css
-~~~
-
-Note that `my-inline.scss` and `my-style.scss` are not affected by this.
-Also, since all files are valid SCSS, the splitting part is entirely optional.
-If you would like to build just one regular CSS file, add
-
-```yml
-hydejack:
-  no_inline_css: true
+```Java
+public interface ServerService
+{
+    @Request
+    public Integer Add(Integer a,Integer b);
+}
+//注册数据类型
+AbstractTypes types = new AbstractTypes();
+types.add(Integer.class,"Int");
+types.add(Long,"Long");
+types.add(String,"String");
+types.add(Boolean,"Bool");
+types.add(User.class,"User");
+Net net = NetCore.register("name", Net.NetType.WebSocket); //注册网关
+Client client = ClientCore.Register(net,"127.0.0.1:28015/NetDemo/");//注册客户端
+Request request = RequestCore.register(ServerRequest.class,net, "Server", types);//注册请求
+net.publish();//启动
 ```
 
-to your config file.
+## 架构
 
+### Core
 
-*[FLIP]: First Last Invert Play
+>   维护特有类，作为全局静态类，唯一对外公开接口，确保了对应实体注册/销毁/访问时安全性。
+
+Core一般含有Register、UnRegister、Get三大公开方法，Ethereal拥有四个Core，分别为：
+
+- **NetCore**：Net网络节点的管理
+
+- **ClientCore/ServerCore**：Client客户端或Server服务端的管理
+
+- **ServiceCore**：Service请求体的管理
+
+- **RequestCore**：Request请求体的管理
+
+  Core并非实质保存着对该实体的实例，实际上，Request、Service、Client/Server都归于Net，Net作为一个网络节点，与其他网络节点交互（管理中心、注册中心）。
+
+  Core的目标是屏蔽注册细节，也是为了保证访问安全，Core是用户交互操作的唯一入口。
+
+### Config
+
+Config含有各式各样的配置项，以此满足用户的个性化配置。
+
+- **NetConfig**：Net网络节点配置项
+
+- **ClientConfig/ServerConfig**：Client/Server配置项
+
+- **ServiceConfig**：Service配置项
+
+- **RequestConfig**：Request配置项
+
+  同时Config可作为蓝本，在多个实体间共享。
+
+### Object
+
+Core根据Config配置产生具体的Object（实体），实体完成具体的工作。
+
+- **Net**：对内作为管理中心，管理实体，对外负责作为注册中心向外暴露服务。
+- **Client/Server**：通讯框架，Java使用Netty框架，Python使用Twisted。
+- **Service**：服务实现类，负责请求的具体实现。
+- **Request**：服务请求类，负责向远程具体的服务实现发起请求。
