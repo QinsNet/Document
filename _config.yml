@@ -49,7 +49,7 @@ author:
 # Add links to the sidebar.
 menu:
   - title:             官方博客
-    url:               /demo/
+    url:               /blog/
   - title:             官方文档
     url:               /docs/
   - title:             关于我们
