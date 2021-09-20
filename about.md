@@ -1,6 +1,19 @@
-# 开发人员介绍
-白阳
+# 开发团队
+* [白阳]{:.heading.flip-title}
+* [007]{:.heading.flip-title}
+* [anmmMa]{:.heading.flip-title}
+* [久忆]{:.heading.flip-title}
+* [青山]{:.heading.flip-title}
+* [Laity]{:.heading.flip-title}
 
 
-#项目分配
+
 ![](assets/img/introduce/人员分配.png)
+
+
+[白阳]: team/白阳.md
+[007]: team/007.md
+[anmmMa]: team/anmmMa.md
+[久忆]: team/久忆.md
+[青山]: team/青山.md
+[Laity]: team/Laity.md
