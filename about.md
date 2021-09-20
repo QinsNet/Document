@@ -14,6 +14,6 @@
 [白阳]: team/白阳.md
 [007]: team/007.md
 [anmmMa]: team/anmmMa.md
-[久忆]: team/久忆.md
+[久忆]: team/Ckay.md
 [青山]: team/青山.md
 [Laity]: team/Laity.md
