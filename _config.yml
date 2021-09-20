@@ -41,8 +41,8 @@ logo:                  /assets/img/LOGO.png
 # This should be the same author as first entry in `_data/authors.yml`.
 author:
   # Used by `jekyll-feed`:
-  name:                <阳> <白>
-  email:               <839336369@qq.com>
+  name:                阳 白
+  email:               839336369@qq.com
   # # Used by `jekyll-seo-tag`:
   # twitter:             <username>
 
