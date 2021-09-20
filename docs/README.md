@@ -1,49 +1,33 @@
----
-layout: page
-title: Documentation
-description: >
-  Here you should be able to find everything you need to know to accomplish the most common tasks when blogging with Hydejack.
-hide_description: true
-sitemap: false
-permalink: /docs/
----
-
-Here you should be able to find everything you need to know to accomplish the most common tasks when blogging with Hydejack.
-Should you think something is missing, [please let me know](mailto:mail@qwtel.com).
-Should you discover a mistake in the docs (or a bug in general) feel free to [open an issue](https://github.com/hydecorp/hydejack/issues) on GitHub.
-
-While this manual tries to be beginner-friendly, as a user of Jekyll it is assumed that you are comfortable running shell commands and editing text files.
-{:.note}
-
-
-## Getting started
-* [Install]{:.heading.flip-title} --- How to install and run Hydejack.
-* [Upgrade]{:.heading.flip-title} --- You can skip this if you haven't used Hydejack before.
-* [Config]{:.heading.flip-title} --- Once Jekyll is running you can start editing your config file.
+## 引论
+* [介绍]{:.heading.flip-title} --- Ethereal 官方定义
+* [入门]{:.heading.flip-title} --- Ethereal 快速部署
+* [架构]{:.heading.flip-title} --- Ethereal 结构剖析
 {:.related-posts.faded}
 
-## Using Hydejack
-* [Basics]{:.heading.flip-title} --- How to add different types of content.
-* [Writing]{:.heading.flip-title} --- Producing markdown content for Hydejack.
-* [Scripts]{:.heading.flip-title} --- How to include 3rd party scripts on your site.
-* [Build]{:.heading.flip-title} --- How to build the static files for deployment.
-* [Advanced]{:.heading.flip-title} --- Guides for more advanced tasks.
+## 技术文档
+* [中心配置]{:.heading.flip-title} --- 注册中心、管理中心配置
+* [Token理念]{:.heading.flip-title} --- Ethereal功能性拓展
+* [双工通讯]{:.heading.flip-title} --- RPC双工策略
+* [日志系统]{:.heading.flip-title} --- Ethereal日志输出系统
+* [异常系统]{:.heading.flip-title} --- Ethereal异常抛出系统
+* [服务拦截]{:.heading.flip-title} --- Ethereal服务拦截系统
 {:.related-posts.faded}
 
 ## Other
-* [LICENSE]{:.heading.flip-title} --- The license of this project.
-* [NOTICE]{:.heading.flip-title} --- Parts of this program are provided under separate licenses.
-* [CHANGELOG]{:.heading.flip-title} --- Version history of Hydejack.
+* [LICENSE]{:.heading.flip-title} --- Ethereal许可说明
+* [NOTICE]{:.heading.flip-title} --- Ethereal开发声明
+* [CHANGELOG]{:.heading.flip-title} --- Ethereal更新日志
 {:.related-posts.faded}
 
-[install]: install.md
-[upgrade]: upgrade.md
-[config]: config.md
-[basics]: basics.md
-[writing]: writing.md
-[scripts]: scripts.md
-[build]: build.md
-[advanced]: advanced.md
+[介绍]: 介绍.md
+[入门]: 入门.md
+[架构]: 架构.md
+[中心配置]: 中心配置.md
+[Token理念]: Token理念.md
+[双工通讯]: 双工通讯.md
+[日志系统]: 日志系统.md
+[异常系统]: 异常系统.md
+[服务拦截]: 服务拦截.md
 [LICENSE]: ../LICENSE.md
 [NOTICE]: ../NOTICE.md
 [CHANGELOG]: ../CHANGELOG.md
