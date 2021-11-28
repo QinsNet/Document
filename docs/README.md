@@ -5,6 +5,7 @@
 {:.related-posts.faded}
 
 ## 技术文档
+* [方法调用]{:.heading.flip-title} --- 本地、远程方法的配置，AOP设计
 * [中心配置]{:.heading.flip-title} --- 注册中心、管理中心配置
 * [Token理念]{:.heading.flip-title} --- Ethereal功能性拓展
 * [双工通讯]{:.heading.flip-title} --- RPC双工策略
