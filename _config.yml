@@ -20,12 +20,12 @@
 lang:                  en
 
 # The title of your blog. Used in the sidebar and the browser tab.
-title:                 Ethereal
+title:                 QinsNet
 
 # A short description (~150 chars) of the page used for the meta description tag.
 # Can use markdown, but no more than one paragraph (enforced by `>`)
 description:           >
-  Ethereal 官方文档
+  QinsNet 官方文档
 
 # A shorter description for the sidebar.
 tagline:               山海缥缈不可寻，一封书信寄月明。

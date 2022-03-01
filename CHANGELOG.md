@@ -9,10 +9,9 @@ sitemap: false
 * Ethereal 版本更新日志
 {:toc .large-only}
 
-## v0.1.2 alpha-beta1
-Sep 20 2021
+## v1.0 通过了所有同步状态测试案例
+March 1 2022
 {:.heading.post-date}
 
-* Ethereal 命名重构、结构重构.
-* 拦截器事件放置核心实体类.
-* 日志系统、异常系统增设发生轨迹.
+* 抽离 Ethereal 核心功能
+* 更名为 QinsNet 命名重构、结构重构.
