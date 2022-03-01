@@ -1,7 +1,7 @@
 ## 引论
-* [QinsNet]{:.heading.flip-title} --- Ethereal 官方定义
-* [引论]{:.heading.flip-title} --- Ethereal 官方定义
-* [入门]{:.heading.flip-title} --- Ethereal 快速部署
+* [QinsNet]{:.heading.flip-title} --- QinsNet
+* [引论]{:.heading.flip-title} --- 简述
+* [入门]{:.heading.flip-title} --- 快速部署
 {:.related-posts.faded}
 
 ## 技术文档
